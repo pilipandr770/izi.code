@@ -5,8 +5,16 @@ services:
     buildCommand: |
       pip install -r requirements.txt
       flask db upgrade
-    startCommand: python run.py
+    startCommand: gunicorn --config gunicorn.conf.py wsgi:app
+    plan: starter
+    autoDeploy: true
     envVars:
+      - key: WEB_CONCURRENCY
+        value: "2"
+      - key: MAX_WORKERS
+        value: "2"
+      - key: PYTHON_UNBUFFERED
+        value: "true"
       - key: FLASK_CONFIG
         value: production
       - key: SECRET_KEY
