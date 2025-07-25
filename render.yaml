@@ -4,7 +4,8 @@ services:
     runtime: python
     buildCommand: |
       pip install -r requirements.txt
-      flask db upgrade
+      chmod +x initialize.sh
+      ./initialize.sh
     startCommand: gunicorn --config gunicorn.conf.py wsgi:app
     plan: starter
     autoDeploy: true
