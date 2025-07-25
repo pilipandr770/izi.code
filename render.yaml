@@ -6,7 +6,9 @@ services:
       pip install -r requirements.txt
       chmod +x initialize.sh
       ./initialize.sh
-    startCommand: gunicorn --config gunicorn.conf.py wsgi:app
+    startCommand: |
+      chmod +x startup.sh
+      ./startup.sh
     plan: starter
     autoDeploy: true
     envVars:

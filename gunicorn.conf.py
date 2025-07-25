@@ -1,18 +1,24 @@
 import multiprocessing
+import os
 
 # Gunicorn configuration file
 # https://docs.gunicorn.org/en/stable/configure.html
 
-# Server socket
-bind = "0.0.0.0:5000"
+# Server socket - use PORT environment variable if set (required for Render)
+port = os.environ.get("PORT", "5000")
+bind = f"0.0.0.0:{port}"
 
-# Worker processes
-workers = 2  # Keep worker count low to reduce memory usage
+# Worker processes - use minimal workers to save memory
+workers = int(os.environ.get("WEB_CONCURRENCY", 1))
 worker_class = "sync"
-worker_connections = 1000
-timeout = 120  # Increase timeout to allow for OpenAI API calls
+worker_connections = 500
+timeout = 150  # Longer timeout to allow for OpenAI API calls
 graceful_timeout = 30
 keepalive = 2
+
+# Reduce memory usage
+max_requests = 500
+max_requests_jitter = 50
 
 # Logging
 accesslog = "-"
