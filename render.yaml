@@ -1,7 +1,7 @@
 services:
   - type: web
     name: saas-shop
-    env: python
+    runtime: python
     buildCommand: |
       pip install -r requirements.txt
       flask db upgrade
@@ -36,3 +36,5 @@ databases:
   - name: saas-shop-db
     databaseName: saas_shop
     user: saas_shop_user
+    postgresMajorVersion: "14"  # Указываем конкретную версию PostgreSQL
+    ipAllowList: []  # Доступ из всех расположений
