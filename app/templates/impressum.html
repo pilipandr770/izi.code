@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Impressum') }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">{{ _('Impressum') }}</h1>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">{{ _('Information according to § 5 TMG') }}</h2>
+                    <p>
+                        SaaS Shop GmbH<br>
+                        Musterstraße 123<br>
+                        10115 Berlin<br>
+                        Deutschland
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('Contact') }}</h2>
+                    <p>
+                        {{ _('Phone') }}: +49 30 1234567<br>
+                        {{ _('Email') }}: info@saas-shop.example.com
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('Represented by') }}</h2>
+                    <p>
+                        {{ _('Managing Director') }}: Max Mustermann
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('Registration') }}</h2>
+                    <p>
+                        {{ _('Registry court') }}: Amtsgericht Berlin Charlottenburg<br>
+                        {{ _('Registration number') }}: HRB 123456
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('VAT Identification Number') }}</h2>
+                    <p>
+                        {{ _('VAT ID according to § 27a of the Value Added Tax Act') }}: DE123456789
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('Responsible for content') }}</h2>
+                    <p>
+                        Max Mustermann<br>
+                        SaaS Shop GmbH<br>
+                        Musterstraße 123<br>
+                        10115 Berlin<br>
+                        Deutschland
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('EU Dispute Resolution') }}</h2>
+                    <p>
+                        {{ _('The European Commission provides a platform for online dispute resolution (OS):') }} 
+                        <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">https://ec.europa.eu/consumers/odr/</a>
+                    </p>
+                    <p>
+                        {{ _('Our email address can be found in the impressum above.') }}
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('Consumer Dispute Resolution / Universal Dispute Resolution Body') }}</h2>
+                    <p>
+                        {{ _('We are not willing or obliged to participate in dispute resolution proceedings before a consumer arbitration board.') }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary">{{ _('Back to Home') }}</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

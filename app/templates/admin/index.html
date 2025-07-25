@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Admin Dashboard') }} - {{ super() }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar admin-sidebar">
+            <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>{{ _('Administration') }}</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}" href="{{ url_for('admin.index') }}">
+                            <i class="fas fa-tachometer-alt"></i> {{ _('Dashboard') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'categories' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.categories') }}">
+                            <i class="fas fa-tags"></i> {{ _('Categories') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'products' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.products') }}">
+                            <i class="fas fa-box"></i> {{ _('Products') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'blog' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.blog') }}">
+                            <i class="fas fa-blog"></i> {{ _('Blog') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'homepage' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.homepage') }}">
+                            <i class="fas fa-home"></i> {{ _('Homepage') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'social' in request.endpoint %}active{% endif %}" href="{{ url_for('admin_routes.social') }}">
+                            <i class="fas fa-share-alt"></i> {{ _('Social Links') }}
+                        </a>
+                    </li>
+                </ul>
+                
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>{{ _('AI Tools') }}</span>
+                </h6>
+                <ul class="nav flex-column mb-2">
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'chatbot' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.chatbot_admin') }}">
+                            <i class="fas fa-robot"></i> {{ _('Chatbot Management') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aiPostModal">
+                            <i class="fas fa-magic"></i> {{ _('Generate AI Post') }}
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="px-3 mt-4">
+                    <a href="{{ url_for('admin.logout') }}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 admin-main">
+            {% block admin_content %}
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">{{ _('Dashboard') }}</h1>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">{{ _('Total Products') }}</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_products }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-box fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">{{ _('Categories') }}</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_categories }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-tags fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">{{ _('Blog Posts') }}</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_blog_posts }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-blog fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">{{ _('Orders') }}</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_orders }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">{{ _('Quick Actions') }}</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <a href="{{ url_for('admin.categories') }}" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-plus-circle"></i><br>
+                                        {{ _('Add Category') }}
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <a href="{{ url_for('admin.products') }}" class="btn btn-success btn-lg w-100">
+                                        <i class="fas fa-plus-circle"></i><br>
+                                        {{ _('Add Product') }}
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <a href="{{ url_for('admin.blog') }}" class="btn btn-info btn-lg w-100">
+                                        <i class="fas fa-plus-circle"></i><br>
+                                        {{ _('Write Post') }}
+                                    </a>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <button class="btn btn-warning btn-lg w-100" data-bs-toggle="modal" data-bs-target="#aiPostModal">
+                                        <i class="fas fa-robot"></i><br>
+                                        {{ _('AI Generate') }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endblock %}
+        </main>
+    </div>
+</div>
+
+<!-- AI Post Generation Modal -->
+<div class="modal fade" id="aiPostModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ _('Generate AI Blog Post') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="aiPostForm">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">{{ _('Topic (Ukrainian)') }}</label>
+                            <input type="text" class="form-control" name="topic_uk" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">{{ _('Topic (Russian)') }}</label>
+                            <input type="text" class="form-control" name="topic_ru" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">{{ _('Topic (German)') }}</label>
+                            <input type="text" class="form-control" name="topic_de" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">{{ _('Topic (English)') }}</label>
+                            <input type="text" class="form-control" name="topic_en">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ _('SEO Keywords') }}</label>
+                        <input type="text" class="form-control" name="keywords" placeholder="{{ _('comma separated') }}">
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="auto_publish" id="autoPublish">
+                        <label class="form-check-label" for="autoPublish">
+                            {{ _('Auto-publish after generation') }}
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                <button type="button" class="btn btn-primary" onclick="generateAIPost()">
+                    <i class="fas fa-robot"></i> {{ _('Generate') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+async function generateAIPost() {
+    const form = document.getElementById('aiPostForm');
+    const formData = new FormData(form);
+    
+    // Show loading state
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ _("Generating...") }}';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/admin/generate-ai-post', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Close modal and show success message
+            bootstrap.Modal.getInstance(document.getElementById('aiPostModal')).hide();
+            
+            // Show success alert
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show';
+            alert.innerHTML = `
+                <strong>{{ _('Success!') }}</strong> {{ _('AI blog post generated successfully.') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.admin-main').insertBefore(alert, document.querySelector('.admin-main').firstChild);
+            
+            // Redirect to blog management after 2 seconds
+            setTimeout(() => {
+                window.location.href = "{{ url_for('admin.blog') }}";
+            }, 2000);
+        } else {
+            alert('{{ _("Error generating post:") }} ' + (data.error || '{{ _("Unknown error") }}'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('{{ _("Network error occurred") }}');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}

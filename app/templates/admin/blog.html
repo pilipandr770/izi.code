@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Blog') }} - {{ _('Admin Dashboard') }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Admin Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar admin-sidebar">
+            <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>{{ _('Administration') }}</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.index') }}">
+                            <i class="fas fa-tachometer-alt"></i> {{ _('Dashboard') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.categories') }}">
+                            <i class="fas fa-tags"></i> {{ _('Categories') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.products') }}">
+                            <i class="fas fa-box"></i> {{ _('Products') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('admin.blog') }}">
+                            <i class="fas fa-blog"></i> {{ _('Blog') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">{{ _('Blog Management') }}</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{{ url_for('admin_routes.add_blog_post') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> {{ _('Add Post') }}
+                        </a>
+                        <a href="{{ url_for('admin_routes.add_blog_post') }}?ai=1" class="btn btn-success">
+                            <i class="fas fa-robot"></i> {{ _('AI Generate') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>{{ _('Image') }}</th>
+                            <th>{{ _('Title (UK)') }}</th>
+                            <th>{{ _('Author') }}</th>
+                            <th>{{ _('Status') }}</th>
+                            <th>{{ _('Created') }}</th>
+                            <th>{{ _('Actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if posts %}
+                            {% for post in posts %}
+                            <tr>
+                                <td>{{ post.id }}</td>
+                                <td>
+                                    {% if post.image %}
+                                        <img src="{{ url_for('static', filename='uploads/' + post.image) }}" 
+                                             class="rounded" style="width: 40px; height: 40px; object-fit: cover;" alt="Post">
+                                    {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                             style="width: 40px; height: 40px;">
+                                            <i class="fas fa-file-alt text-muted"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ post.title_uk or '-' }}</strong>
+                                    {% if post.excerpt_uk %}
+                                        <br><small class="text-muted">{{ post.excerpt_uk[:50] }}...</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if post.author %}
+                                        {{ post.author.username }}
+                                    {% else %}
+                                        <span class="text-muted">{{ _('Unknown') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if post.is_published %}
+                                        <span class="badge bg-success">{{ _('Published') }}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">{{ _('Draft') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ post.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('main.blog_post', slug=post.slug) }}" 
+                                           class="btn btn-sm btn-outline-info" target="_blank">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin_routes.edit_blog_post', post_id=post.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="POST" action="{{ url_for('admin_routes.delete_blog_post', post_id=post.id) }}" 
+                                              style="display: inline;" 
+                                              onsubmit="return confirm('{{ _('Are you sure you want to delete this blog post?') }}')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="fas fa-blog fa-2x mb-3"></i>
+                                    <p>{{ _('No blog posts found') }}</p>
+                                    <div>
+                                        <a href="{{ url_for('admin_routes.add_blog_post') }}" class="btn btn-primary me-2">
+                                            <i class="fas fa-plus"></i> {{ _('Create First Post') }}
+                                        </a>
+                                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#aiPostModal">
+                                            <i class="fas fa-robot"></i> {{ _('Generate with AI') }}
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- AI Post Generation Modal -->
+<div class="modal fade" id="aiPostModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ _('Generate AI Blog Post') }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="aiPostForm">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">{{ _('Topic (Ukrainian)') }}</label>
+                            <input type="text" class="form-control" name="topic_uk" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">{{ _('Topic (Russian)') }}</label>
+                            <input type="text" class="form-control" name="topic_ru" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">{{ _('Topic (German)') }}</label>
+                            <input type="text" class="form-control" name="topic_de" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">{{ _('Topic (English)') }}</label>
+                            <input type="text" class="form-control" name="topic_en">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ _('SEO Keywords') }}</label>
+                        <input type="text" class="form-control" name="keywords" placeholder="{{ _('comma separated') }}">
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="auto_publish" id="autoPublish">
+                        <label class="form-check-label" for="autoPublish">
+                            {{ _('Auto-publish after generation') }}
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
+                <button type="button" class="btn btn-primary" onclick="generateAIPost()">
+                    <i class="fas fa-robot"></i> {{ _('Generate') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function generateAIPost() {
+    const form = document.getElementById('aiPostForm');
+    const formData = new FormData(form);
+    
+    // Show loading state
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ _("Generating...") }}';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/admin/generate-ai-post', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Close modal and show success message
+            bootstrap.Modal.getInstance(document.getElementById('aiPostModal')).hide();
+            
+            // Show success alert
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show';
+            alert.innerHTML = `
+                <strong>{{ _('Success!') }}</strong> {{ _('AI blog post generated successfully.') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.admin-main').insertBefore(alert, document.querySelector('.admin-main').firstChild);
+            
+            // Reload page after 2 seconds
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            alert('{{ _("Error generating post:") }} ' + (data.error || '{{ _("Unknown error") }}'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('{{ _("Network error occurred") }}');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+</script>
+{% endblock %}

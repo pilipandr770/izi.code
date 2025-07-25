@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Contact Us') }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="text-center mb-5">{{ _('Contact Us') }}</h1>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ _('Get in Touch') }}</h5>
+                            <form method="POST">
+                                {{ form.hidden_tag() }}
+                                
+                                <div class="mb-3">
+                                    {{ form.name.label(class="form-label") }}
+                                    {{ form.name(class="form-control") }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.name.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ form.email.label(class="form-label") }}
+                                    {{ form.email(class="form-control") }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.email.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ form.subject.label(class="form-label") }}
+                                    {{ form.subject(class="form-control") }}
+                                    {% if form.subject.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.subject.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ form.message.label(class="form-label") }}
+                                    {{ form.message(class="form-control", rows="5") }}
+                                    {% if form.message.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.message.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i> {{ _('Send Message') }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ _('Contact Information') }}</h5>
+                            
+                            <div class="mb-3">
+                                <h6><i class="fas fa-envelope text-primary"></i> {{ _('Email') }}</h6>
+                                <p>info@yourstore.com</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6><i class="fas fa-phone text-primary"></i> {{ _('Phone') }}</h6>
+                                <p>+1 (555) 123-4567</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6><i class="fas fa-map-marker-alt text-primary"></i> {{ _('Address') }}</h6>
+                                <p>123 Business Street<br>
+                                City, State 12345<br>
+                                Country</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6><i class="fas fa-clock text-primary"></i> {{ _('Business Hours') }}</h6>
+                                <p>{{ _('Monday - Friday') }}: 9:00 AM - 6:00 PM<br>
+                                {{ _('Saturday') }}: 10:00 AM - 4:00 PM<br>
+                                {{ _('Sunday') }}: {{ _('Closed') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Chatbot Widget -->
+<div id="chatbot-widget" class="position-fixed" style="bottom: 20px; right: 20px; z-index: 1000;">
+    <button id="chatbot-toggle" class="btn btn-primary rounded-circle" style="width: 60px; height: 60px;">
+        <i class="fas fa-comments"></i>
+    </button>
+    
+    <div id="chatbot-window" class="card" style="width: 350px; height: 400px; display: none;">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">{{ _('AI Assistant') }}</h6>
+                <button id="chatbot-close" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body d-flex flex-column p-0">
+            <div id="chatbot-messages" class="flex-grow-1 p-3" style="max-height: 300px; overflow-y: auto;">
+                <div class="mb-2">
+                    <small class="text-muted">{{ _('AI Assistant') }}</small>
+                    <div class="bg-light p-2 rounded">
+                        {{ _('Hello! How can I help you today?') }}
+                    </div>
+                </div>
+            </div>
+            <div class="border-top p-3">
+                <div class="input-group">
+                    <input type="text" id="chatbot-input" class="form-control" placeholder="{{ _('Type your message...') }}">
+                    <button id="chatbot-send" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

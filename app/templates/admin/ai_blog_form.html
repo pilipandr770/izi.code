@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('AI Blog Generator') }} - {{ _('Admin Dashboard') }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Admin Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar admin-sidebar">
+            <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>{{ _('Administration') }}</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.index') }}">
+                            <i class="fas fa-tachometer-alt"></i> {{ _('Dashboard') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.categories') }}">
+                            <i class="fas fa-tags"></i> {{ _('Categories') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.products') }}">
+                            <i class="fas fa-box"></i> {{ _('Products') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('admin.blog') }}">
+                            <i class="fas fa-blog"></i> {{ _('Blog') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <i class="fas fa-robot"></i> {{ _('AI Blog Generator') }}
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('admin.blog') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> {{ _('Back to Blog') }}
+                    </a>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-lightbulb"></i> {{ _('Blog Post Topics') }}
+                                </h5>
+                                <small class="text-muted">{{ _('Provide topics in different languages for AI to generate content') }}</small>
+                            </div>
+                            <div class="card-body">
+                                <!-- Ukrainian Topic -->
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        {{ form.topic_uk.label(class="form-label") }}
+                                    </div>
+                                    <div class="col-md-9">
+                                        {{ form.topic_uk(class="form-control" + (" is-invalid" if form.topic_uk.errors else "")) }}
+                                        {% if form.topic_uk.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.topic_uk.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Russian Topic -->
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        {{ form.topic_ru.label(class="form-label") }}
+                                    </div>
+                                    <div class="col-md-9">
+                                        {{ form.topic_ru(class="form-control") }}
+                                    </div>
+                                </div>
+
+                                <!-- German Topic -->
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        {{ form.topic_de.label(class="form-label") }}
+                                    </div>
+                                    <div class="col-md-9">
+                                        {{ form.topic_de(class="form-control") }}
+                                    </div>
+                                </div>
+
+                                <!-- English Topic -->
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        {{ form.topic_en.label(class="form-label") }}
+                                    </div>
+                                    <div class="col-md-9">
+                                        {{ form.topic_en(class="form-control") }}
+                                    </div>
+                                </div>
+
+                                <!-- SEO Keywords -->
+                                <div class="row mb-3">
+                                    <div class="col-md-3">
+                                        {{ form.keywords.label(class="form-label") }}
+                                    </div>
+                                    <div class="col-md-9">
+                                        {{ form.keywords(class="form-control") }}
+                                        <div class="form-text">{{ _('Comma-separated keywords for SEO optimization') }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">{{ _('Generation Settings') }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Auto Publish -->
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.auto_publish(class="form-check-input", checked="checked") }}
+                                    {{ form.auto_publish.label(class="form-check-label") }}
+                                </div>
+                                <div class="form-text">{{ _('Automatically publish the generated post') }}</div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success" form="ai-blog-form">
+                                    <i class="fas fa-magic"></i> {{ _('Generate AI Blog Post') }}
+                                </button>
+                                <a href="{{ url_for('admin.blog') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> {{ _('Cancel') }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-info-circle"></i> {{ _('How it works') }}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <small class="text-muted">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success"></i> {{ _('Provide topic in at least one language') }}</li>
+                                    <li><i class="fas fa-check text-success"></i> {{ _('AI will generate content in all 4 languages') }}</li>
+                                    <li><i class="fas fa-check text-success"></i> {{ _('SEO keywords will be naturally integrated') }}</li>
+                                    <li><i class="fas fa-check text-success"></i> {{ _('Content includes title, excerpt, and full text') }}</li>
+                                </ul>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set form ID for submit button
+    const form = document.querySelector('form');
+    if (form) {
+        form.id = 'ai-blog-form';
+    }
+});
+</script>
+{% endblock %}

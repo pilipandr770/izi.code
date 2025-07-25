@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.get_name(language) }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">{{ _('Home') }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('main.shop') }}">{{ _('Shop') }}</a></li>
+            <li class="breadcrumb-item active">{{ category.get_name(language) }}</li>
+        </ol>
+    </nav>
+    
+    <!-- Category Header -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="text-center">
+                {% if category.image %}
+                <img src="{{ url_for('static', filename='uploads/' + category.image) }}" alt="{{ category.get_name(language) }}" class="img-fluid rounded mb-3" style="max-height: 200px;">
+                {% endif %}
+                <h1>{{ category.get_name(language) }}</h1>
+                {% if category.get_description(language) %}
+                <p class="lead">{{ category.get_description(language) }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Products Grid -->
+    {% if products %}
+    <div class="row product-grid">
+        {% for product in products %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 product-card" data-product-id="{{ product.id }}">
+                {% if product.image %}
+                <img src="{{ url_for('static', filename='uploads/' + product.image) }}" class="card-img-top" alt="{{ product.get_name(language) }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.get_name(language) }}</h5>
+                    <p class="card-text">{{ product.get_description(language)[:100] }}{% if product.get_description(language)|length > 100 %}...{% endif %}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="h5 text-primary mb-0">{{ product.price }} {{ product.currency }}</span>
+                        <div class="btn-group">
+                            <a href="{{ url_for('main.product_detail', product_id=product.id) }}" class="btn btn-outline-primary btn-sm">
+                                {{ _('Details') }}
+                            </a>
+                            <button class="btn btn-primary btn-sm" onclick="addToCart({{ product.id }})">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12 text-center">
+            <div class="alert alert-info">
+                <h4>{{ _('No products in this category') }}</h4>
+                <p>{{ _('Please check back later for new products.') }}</p>
+                <a href="{{ url_for('main.shop') }}" class="btn btn-primary">{{ _('Browse Other Categories') }}</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

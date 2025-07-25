@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: saas-shop
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      flask db upgrade
+    startCommand: python run.py
+    envVars:
+      - key: FLASK_CONFIG
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: saas-shop-db
+          property: connectionString
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_ASSISTANT_ID
+        sync: false
+      - key: DB_SCHEMA
+        value: AndriIT
+      - key: ADMIN_EMAIL
+        value: admin@example.com
+      - key: ADMIN_PASSWORD
+        generateValue: true
+
+databases:
+  - name: saas-shop-db
+    databaseName: saas_shop
+    user: saas_shop_user

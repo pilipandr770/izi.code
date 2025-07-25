@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if action == 'edit' %}
+        {{ _('Edit Category') }} - {{ category.name_uk }}
+    {% else %}
+        {{ _('Add Category') }}
+    {% endif %}
+    - {{ _('Admin Dashboard') }}
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Admin Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar admin-sidebar">
+            <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>{{ _('Administration') }}</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.index') }}">
+                            <i class="fas fa-tachometer-alt"></i> {{ _('Dashboard') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('admin.categories') }}">
+                            <i class="fas fa-tags"></i> {{ _('Categories') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.products') }}">
+                            <i class="fas fa-box"></i> {{ _('Products') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.blog') }}">
+                            <i class="fas fa-blog"></i> {{ _('Blog') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    {% if action == 'edit' %}
+                        {{ _('Edit Category') }}: {{ category.name_uk }}
+                    {% else %}
+                        {{ _('Add New Category') }}
+                    {% endif %}
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('admin.categories') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> {{ _('Back to Categories') }}
+                    </a>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category_msg, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category_msg == 'error' else category_msg }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card form-card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                {% if action == 'edit' %}
+                                    <i class="fas fa-edit"></i> {{ _('Edit Category Information') }}
+                                {% else %}
+                                    <i class="fas fa-plus"></i> {{ _('Category Information') }}
+                                {% endif %}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" enctype="multipart/form-data">
+                                {{ form.hidden_tag() }}
+                                
+                                <div class="row">
+                                    <!-- Ukrainian -->
+                                    <div class="col-md-3 mb-3">
+                                        <h6 class="text-primary"><i class="flag-icon flag-icon-ua"></i> {{ _('Ukrainian') }}</h6>
+                                        
+                                        <div class="mb-3">
+                                            {{ form.name_uk.label(class="form-label required") }}
+                                            {{ form.name_uk(class="form-control") }}
+                                            {% if form.name_uk.errors %}
+                                                <div class="text-danger small">
+                                                    {% for error in form.name_uk.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            {{ form.description_uk.label(class="form-label") }}
+                                            {{ form.description_uk(class="form-control", rows="3") }}
+                                            {% if form.description_uk.errors %}
+                                                <div class="text-danger small">
+                                                    {% for error in form.description_uk.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Russian -->
+                                    <div class="col-md-3 mb-3">
+                                        <h6 class="text-success"><i class="flag-icon flag-icon-ru"></i> {{ _('Russian') }}</h6>
+                                        
+                                        <div class="mb-3">
+                                            {{ form.name_ru.label(class="form-label required") }}
+                                            {{ form.name_ru(class="form-control") }}
+                                            {% if form.name_ru.errors %}
+                                                <div class="text-danger small">
+                                                    {% for error in form.name_ru.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            {{ form.description_ru.label(class="form-label") }}
+                                            {{ form.description_ru(class="form-control", rows="3") }}
+                                            {% if form.description_ru.errors %}
+                                                <div class="text-danger small">
+                                                    {% for error in form.description_ru.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- German -->
+                                    <div class="col-md-3 mb-3">
+                                        <h6 class="text-warning"><i class="flag-icon flag-icon-de"></i> {{ _('German') }}</h6>
+                                        
+                                        <div class="mb-3">
+                                            {{ form.name_de.label(class="form-label required") }}
+                                            {{ form.name_de(class="form-control") }}
+                                            {% if form.name_de.errors %}
+                                                <div class="text-danger small">
+                                                    {% for error in form.name_de.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            {{ form.description_de.label(class="form-label") }}
+                                            {{ form.description_de(class="form-control", rows="3") }}
+                                            {% if form.description_de.errors %}
+                                                <div class="text-danger small">
+                                                    {% for error in form.description_de.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- English -->
+                                    <div class="col-md-3 mb-3">
+                                        <h6 class="text-info"><i class="flag-icon flag-icon-us"></i> {{ _('English') }}</h6>
+                                        
+                                        <div class="mb-3">
+                                            {{ form.name_en.label(class="form-label") }}
+                                            {{ form.name_en(class="form-control") }}
+                                            {% if form.name_en.errors %}
+                                                <div class="text-danger small">
+                                                    {% for error in form.name_en.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            {{ form.description_en.label(class="form-label") }}
+                                            {{ form.description_en(class="form-control", rows="3") }}
+                                            {% if form.description_en.errors %}
+                                                <div class="text-danger small">
+                                                    {% for error in form.description_en.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        {{ form.image.label(class="form-label") }}
+                                        <div class="file-upload-wrapper">
+                                            {{ form.image(class="file-upload-input", onchange="previewImage(this)") }}
+                                            <label for="{{ form.image.id }}" class="file-upload-label">
+                                                <i class="fas fa-upload"></i> {{ _('Choose image file') }}
+                                            </label>
+                                        </div>
+                                        {% if form.image.errors %}
+                                            <div class="text-danger small">
+                                                {% for error in form.image.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <!-- Image preview -->
+                                        <div id="image-preview" class="mt-2">
+                                            {% if action == 'edit' and category.image %}
+                                                <img src="{{ url_for('static', filename='uploads/' + category.image) }}" 
+                                                     class="img-preview" alt="Current image">
+                                                <p class="small text-muted mt-1">{{ _('Current image') }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-3 mb-3">
+                                        <div class="form-check form-switch mt-4">
+                                            {{ form.is_active(class="form-check-input") }}
+                                            {{ form.is_active.label(class="form-check-label") }}
+                                        </div>
+                                        {% if form.is_active.errors %}
+                                            <div class="text-danger small">
+                                                {% for error in form.is_active.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-md-3 mb-3">
+                                        {{ form.sort_order.label(class="form-label") }}
+                                        {{ form.sort_order(class="form-control") }}
+                                        {% if form.sort_order.errors %}
+                                            <div class="text-danger small">
+                                                {% for error in form.sort_order.errors %}{{ error }}{% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('admin.categories') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> {{ _('Cancel') }}
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i>
+                                        {% if action == 'edit' %}
+                                            {{ _('Update Category') }}
+                                        {% else %}
+                                            {{ _('Create Category') }}
+                                        {% endif %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('image-preview');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <img src="${e.target.result}" class="img-preview" alt="Preview">
+                <p class="small text-muted mt-1">${input.files[0].name}</p>
+            `;
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+
+<style>
+.required::after {
+    content: " *";
+    color: red;
+}
+
+.flag-icon {
+    margin-right: 5px;
+}
+</style>
+{% endblock %}

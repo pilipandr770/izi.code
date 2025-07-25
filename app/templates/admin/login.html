@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('Admin Login') }} - SaaS Shop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 400px;
+            width: 100%;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .login-body {
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fas fa-shield-alt fa-3x mb-3"></i>
+            <h3>{{ _('Admin Login') }}</h3>
+            <p class="mb-0">{{ _('Access the administration panel') }}</p>
+        </div>
+        
+        <div class="login-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                
+                <div class="mb-3">
+                    {{ form.username.label(class="form-label") }}
+                    {{ form.username(class="form-control form-control-lg") }}
+                    {% if form.username.errors %}
+                        <div class="text-danger small">
+                            {% for error in form.username.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-control form-control-lg") }}
+                    {% if form.password.errors %}
+                        <div class="text-danger small">
+                            {% for error in form.password.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-sign-in-alt me-2"></i>{{ _('Login') }}
+                </button>
+            </form>
+            
+            <hr class="my-4">
+            
+            <div class="text-center">
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-home me-2"></i>{{ _('Back to Website') }}
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

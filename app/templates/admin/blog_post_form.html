@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if action == 'edit' %}
+        {{ _('Edit Blog Post') }}
+    {% else %}
+        {{ _('Add Blog Post') }}
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/admin.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.index') }}">
+                            <i class="fas fa-tachometer-alt"></i> {{ _('Dashboard') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.categories') }}">
+                            <i class="fas fa-tags"></i> {{ _('Categories') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.products') }}">
+                            <i class="fas fa-box"></i> {{ _('Products') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('admin.blog') }}">
+                            <i class="fas fa-blog"></i> {{ _('Blog') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.homepage') }}">
+                            <i class="fas fa-home"></i> {{ _('Homepage') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    {% if action == 'edit' %}
+                        {{ _('Edit Blog Post') }}
+                    {% else %}
+                        {{ _('Add Blog Post') }}
+                    {% endif %}
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('admin.blog') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> {{ _('Back to Blog') }}
+                    </a>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">{{ _('Blog Post Information') }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Ukrainian Title -->
+                                <div class="mb-3">
+                                    {{ form.title_uk.label(class="form-label") }}
+                                    {{ form.title_uk(class="form-control" + (" is-invalid" if form.title_uk.errors else "")) }}
+                                    {% if form.title_uk.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.title_uk.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Russian Title -->
+                                <div class="mb-3">
+                                    {{ form.title_ru.label(class="form-label") }}
+                                    {{ form.title_ru(class="form-control") }}
+                                </div>
+
+                                <!-- German Title -->
+                                <div class="mb-3">
+                                    {{ form.title_de.label(class="form-label") }}
+                                    {{ form.title_de(class="form-control") }}
+                                </div>
+
+                                <!-- English Title -->
+                                <div class="mb-3">
+                                    {{ form.title_en.label(class="form-label") }}
+                                    {{ form.title_en(class="form-control") }}
+                                </div>
+
+                                <!-- Ukrainian Excerpt -->
+                                <div class="mb-3">
+                                    {{ form.excerpt_uk.label(class="form-label") }}
+                                    {{ form.excerpt_uk(class="form-control", rows="3") }}
+                                </div>
+
+                                <!-- Russian Excerpt -->
+                                <div class="mb-3">
+                                    {{ form.excerpt_ru.label(class="form-label") }}
+                                    {{ form.excerpt_ru(class="form-control", rows="3") }}
+                                </div>
+
+                                <!-- German Excerpt -->
+                                <div class="mb-3">
+                                    {{ form.excerpt_de.label(class="form-label") }}
+                                    {{ form.excerpt_de(class="form-control", rows="3") }}
+                                </div>
+
+                                <!-- English Excerpt -->
+                                <div class="mb-3">
+                                    {{ form.excerpt_en.label(class="form-label") }}
+                                    {{ form.excerpt_en(class="form-control", rows="3") }}
+                                </div>
+
+                                <!-- Ukrainian Content -->
+                                <div class="mb-3">
+                                    {{ form.content_uk.label(class="form-label") }}
+                                    {{ form.content_uk(class="form-control" + (" is-invalid" if form.content_uk.errors else ""), rows="10") }}
+                                    {% if form.content_uk.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.content_uk.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Russian Content -->
+                                <div class="mb-3">
+                                    {{ form.content_ru.label(class="form-label") }}
+                                    {{ form.content_ru(class="form-control", rows="10") }}
+                                </div>
+
+                                <!-- German Content -->
+                                <div class="mb-3">
+                                    {{ form.content_de.label(class="form-label") }}
+                                    {{ form.content_de(class="form-control", rows="10") }}
+                                </div>
+
+                                <!-- English Content -->
+                                <div class="mb-3">
+                                    {{ form.content_en.label(class="form-label") }}
+                                    {{ form.content_en(class="form-control", rows="10") }}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">{{ _('Post Settings') }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Image Upload -->
+                            <div class="mb-3">
+                                {{ form.image.label(class="form-label") }}
+                                {{ form.image(class="form-control", accept="image/*") }}
+                                {% if action == 'edit' and post.image %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">{{ _('Current image:') }}</small><br>
+                                        <img src="{{ url_for('static', filename='uploads/' + post.image) }}" 
+                                             class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Published Status -->
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.is_published(class="form-check-input") }}
+                                    {{ form.is_published.label(class="form-check-label") }}
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary" form="blog-post-form">
+                                    <i class="fas fa-save"></i>
+                                    {% if action == 'edit' %}
+                                        {{ _('Update Post') }}
+                                    {% else %}
+                                        {{ _('Create Post') }}
+                                    {% endif %}
+                                </button>
+                                <a href="{{ url_for('admin.blog') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> {{ _('Cancel') }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set form ID for submit button
+    const form = document.querySelector('form');
+    if (form) {
+        form.id = 'blog-post-form';
+    }
+    
+    // Image preview
+    const imageInput = document.getElementById('image');
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    let preview = document.getElementById('image-preview');
+                    if (!preview) {
+                        preview = document.createElement('img');
+                        preview.id = 'image-preview';
+                        preview.className = 'img-thumbnail mt-2';
+                        preview.style.maxWidth = '150px';
+                        preview.style.maxHeight = '150px';
+                        imageInput.parentNode.appendChild(preview);
+                    }
+                    preview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

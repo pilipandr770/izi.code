@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Chatbot Management') }} - {{ super() }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar admin-sidebar">
+            <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>{{ _('Administration') }}</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'admin.index' %}active{% endif %}" href="{{ url_for('admin.index') }}">
+                            <i class="fas fa-tachometer-alt"></i> {{ _('Dashboard') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'categories' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.categories') }}">
+                            <i class="fas fa-tags"></i> {{ _('Categories') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'products' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.products') }}">
+                            <i class="fas fa-box"></i> {{ _('Products') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'blog' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.blog') }}">
+                            <i class="fas fa-blog"></i> {{ _('Blog') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'homepage' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.homepage') }}">
+                            <i class="fas fa-home"></i> {{ _('Homepage') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'social' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.social') }}">
+                            <i class="fas fa-share-alt"></i> {{ _('Social Links') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'chatbot' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.chatbot_admin') }}">
+                            <i class="fas fa-robot"></i> {{ _('Chatbot') }}
+                        </a>
+                    </li>
+                </ul>
+                
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                    <span>{{ _('AI Tools') }}</span>
+                </h6>
+                <ul class="nav flex-column mb-2">
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'chatbot' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.chatbot_admin') }}">
+                            <i class="fas fa-robot"></i> {{ _('Chatbot Management') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aiPostModal">
+                            <i class="fas fa-magic"></i> {{ _('Generate AI Post') }}
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="px-3 mt-4">
+                    <a href="{{ url_for('admin.logout') }}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 admin-main">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-robot"></i> Управление чатботом</h2>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4>{{ stats.total_threads }}</h4>
+                                    <p class="mb-0">Всего разговоров</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-comments fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4>{{ stats.active_threads }}</h4>
+                                    <p class="mb-0">Активных разговоров</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-comment-dots fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4>OpenAI</h4>
+                                    <p class="mb-0">Статус подключения</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-plug fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Management Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cogs"></i> Управление</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Очистка данных</h6>
+                            <p class="text-muted">Удалить старые разговоры (старше 7 дней)</p>
+                            <form method="POST" action="{{ url_for('admin.chatbot_cleanup') }}" onsubmit="return confirm('Вы уверены, что хотите удалить старые разговоры?')">
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-trash"></i> Очистить старые чаты
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Настройка OpenAI</h6>
+                            <p class="text-muted">Проверьте файл .env для настройки API ключей</p>
+                            <a href="{{ url_for('static', filename='../CHATBOT_SETUP.md') }}" class="btn btn-info" target="_blank">
+                                <i class="fas fa-book"></i> Инструкция по настройке
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Conversations -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Последние разговоры</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats.recent_threads %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID сессии</th>
+                                    <th>Язык</th>
+                                    <th>Создан</th>
+                                    <th>Обновлен</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for thread in stats.recent_threads %}
+                                <tr>
+                                    <td>
+                                        <code>{{ thread.session_id[:20] }}...</code>
+                                    </td>
+                                    <td>
+                                        {% if thread.language == 'uk' %}
+                                            <span class="badge bg-primary">🇺🇦 Українська</span>
+                                        {% elif thread.language == 'ru' %}
+                                            <span class="badge bg-danger">🇷🇺 Русский</span>
+                                        {% elif thread.language == 'de' %}
+                                            <span class="badge bg-warning">🇩🇪 Deutsch</span>
+                                        {% elif thread.language == 'en' %}
+                                            <span class="badge bg-success">🇺🇸 English</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ thread.language }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ thread.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>{{ thread.updated_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if thread.is_active %}
+                                            <span class="badge bg-success">Активен</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Неактивен</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-comment-slash fa-3x mb-3"></i>
+                        <p>Разговоров пока нет</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Configuration Help -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> Помощь по настройке</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Переменные окружения</h6>
+                            <p class="text-muted">Убедитесь, что в файле .env указаны:</p>
+                            <ul class="list-unstyled">
+                                <li><code>OPENAI_API_KEY</code> - API ключ OpenAI</li>
+                                <li><code>OPENAI_ASSISTANT_ID</code> - ID вашего ассистента</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Полезные ссылки</h6>
+                            <ul class="list-unstyled">
+                                <li><a href="https://platform.openai.com/api-keys" target="_blank">API Keys OpenAI</a></li>
+                                <li><a href="https://platform.openai.com/assistants" target="_blank">OpenAI Assistants</a></li>
+                                <li><a href="https://platform.openai.com/usage" target="_blank">Мониторинг использования</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

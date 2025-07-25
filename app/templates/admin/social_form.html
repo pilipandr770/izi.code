@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Social Link Form') }}{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/admin.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.index') }}">
+                            <i class="fas fa-tachometer-alt"></i> {{ _('Dashboard') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.categories') }}">
+                            <i class="fas fa-tags"></i> {{ _('Categories') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.products') }}">
+                            <i class="fas fa-box"></i> {{ _('Products') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.blog') }}">
+                            <i class="fas fa-blog"></i> {{ _('Blog') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.homepage') }}">
+                            <i class="fas fa-home"></i> {{ _('Homepage') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('admin.social') }}">
+                            <i class="fas fa-share-alt"></i> {{ _('Social Links') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    {% if action == 'add' %}
+                        {{ _('Add New Social Link') }}
+                    {% else %}
+                        {{ _('Edit Social Link') }}
+                    {% endif %}
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{{ url_for('admin.social') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> {{ _('Back to List') }}
+                    </a>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                                {{ form.csrf_token }}
+                                
+                                <div class="mb-3">
+                                    {{ form.name.label(class="form-label") }}
+                                    {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Facebook", autofocus=true) }}
+                                    {% if form.name.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        {{ _('Display name for the social link (e.g. Facebook, Instagram, etc.)') }}
+                                    </small>
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.platform.label(class="form-label") }}
+                                    {{ form.platform(class="form-select" + (" is-invalid" if form.platform.errors else "")) }}
+                                    {% if form.platform.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.platform.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.url.label(class="form-label") }}
+                                    {{ form.url(class="form-control" + (" is-invalid" if form.url.errors else ""), placeholder="https://example.com/your-page") }}
+                                    {% if form.url.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.url.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        {{ _('Enter the full URL including https://') }}
+                                    </small>
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.icon_class.label(class="form-label") }}
+                                    {{ form.icon_class(class="form-control" + (" is-invalid" if form.icon_class.errors else ""), placeholder="fab fa-facebook") }}
+                                    {% if form.icon_class.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.icon_class.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        {{ _('Font Awesome icon class, e.g. fab fa-facebook, fab fa-instagram, etc.') }}
+                                    </small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form.is_active(class="form-check-input") }}
+                                        {{ form.is_active.label(class="form-check-label") }}
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form.sort_order.label(class="form-label") }}
+                                    {{ form.sort_order(class="form-control" + (" is-invalid" if form.sort_order.errors else ""), type="number") }}
+                                    {% if form.sort_order.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.sort_order.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        {{ _('Lower numbers appear first') }}
+                                    </small>
+                                </div>
+
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('admin.social') }}" class="btn btn-outline-secondary">{{ _('Cancel') }}</a>
+                                    <button type="submit" class="btn btn-primary">
+                                        {% if action == 'add' %}
+                                            <i class="fas fa-plus"></i> {{ _('Add Social Link') }}
+                                        {% else %}
+                                            <i class="fas fa-save"></i> {{ _('Save Changes') }}
+                                        {% endif %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-info-circle"></i> {{ _('Help') }}
+                        </div>
+                        <div class="card-body">
+                            <h5>{{ _('Available Icons') }}</h5>
+                            <p>{{ _('This site uses Font Awesome icons. Here are some common social media icons:') }}</p>
+                            <ul>
+                                <li><i class="fab fa-facebook"></i> <code>fab fa-facebook</code></li>
+                                <li><i class="fab fa-twitter"></i> <code>fab fa-twitter</code></li>
+                                <li><i class="fab fa-instagram"></i> <code>fab fa-instagram</code></li>
+                                <li><i class="fab fa-youtube"></i> <code>fab fa-youtube</code></li>
+                                <li><i class="fab fa-tiktok"></i> <code>fab fa-tiktok</code></li>
+                                <li><i class="fab fa-pinterest"></i> <code>fab fa-pinterest</code></li>
+                                <li><i class="fab fa-linkedin"></i> <code>fab fa-linkedin</code></li>
+                                <li><i class="fab fa-telegram"></i> <code>fab fa-telegram</code></li>
+                                <li><i class="fab fa-whatsapp"></i> <code>fab fa-whatsapp</code></li>
+                                <li><i class="fab fa-viber"></i> <code>fab fa-viber</code></li>
+                            </ul>
+                            <p><a href="https://fontawesome.com/icons" target="_blank">{{ _('Browse all Font Awesome icons') }}</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

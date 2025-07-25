@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if language == 'uk' %}Дякуємо за покупку!{% elif language == 'ru' %}Спасибо за покупку!{% elif language == 'de' %}Vielen Dank für Ihren Kauf!{% else %}Thank you for your purchase!{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-lg">
+                <div class="card-body text-center p-5">
+                    <!-- Success Icon -->
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle fa-5x text-success"></i>
+                    </div>
+                    
+                    <!-- Success Message -->
+                    <h1 class="card-title text-success mb-4">
+                        {% if language == 'uk' %}
+                            Дякуємо за покупку!
+                        {% elif language == 'ru' %}
+                            Спасибо за покупку!
+                        {% elif language == 'de' %}
+                            Vielen Dank für Ihren Kauf!
+                        {% else %}
+                            Thank you for your purchase!
+                        {% endif %}
+                    </h1>
+                    
+                    <!-- Order Details -->
+                    <div class="alert alert-success mb-4">
+                        <p class="mb-2">
+                            {% if language == 'uk' %}
+                                Ваше замовлення успішно оброблено.
+                            {% elif language == 'ru' %}
+                                Ваш заказ успешно обработан.
+                            {% elif language == 'de' %}
+                                Ihre Bestellung wurde erfolgreich bearbeitet.
+                            {% else %}
+                                Your order has been successfully processed.
+                            {% endif %}
+                        </p>
+                        
+                        {% if session_id %}
+                        <p class="mb-0">
+                            <strong>
+                                {% if language == 'uk' %}
+                                    ID сесії:
+                                {% elif language == 'ru' %}
+                                    ID сессии:
+                                {% elif language == 'de' %}
+                                    Sitzungs-ID:
+                                {% else %}
+                                    Session ID:
+                                {% endif %}
+                            </strong>
+                            <code>{{ session_id }}</code>
+                        </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Demo Mode Notice -->
+                    {% if session_id and session_id.startswith('demo_') %}
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {% if language == 'uk' %}
+                            <strong>Демо-режим:</strong> Це тестове замовлення. Реальна оплата не була проведена.
+                        {% elif language == 'ru' %}
+                            <strong>Демо-режим:</strong> Это тестовый заказ. Реальная оплата не была проведена.
+                        {% elif language == 'de' %}
+                            <strong>Demo-Modus:</strong> Dies ist eine Testbestellung. Es wurde keine echte Zahlung durchgeführt.
+                        {% else %}
+                            <strong>Demo Mode:</strong> This is a test order. No real payment was processed.
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- What's Next Section -->
+                    <div class="row text-start mt-5">
+                        <div class="col-12">
+                            <h5 class="mb-3">
+                                {% if language == 'uk' %}
+                                    Що далі?
+                                {% elif language == 'ru' %}
+                                    Что дальше?
+                                {% elif language == 'de' %}
+                                    Was kommt als nächstes?
+                                {% else %}
+                                    What's next?
+                                {% endif %}
+                            </h5>
+                            
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-envelope text-primary me-2"></i>
+                                    {% if language == 'uk' %}
+                                        Ви отримаєте підтвердження на email
+                                    {% elif language == 'ru' %}
+                                        Вы получите подтверждение на email
+                                    {% elif language == 'de' %}
+                                        Sie erhalten eine Bestätigung per E-Mail
+                                    {% else %}
+                                        You will receive a confirmation email
+                                    {% endif %}
+                                </li>
+                                
+                                <li class="mb-2">
+                                    <i class="fas fa-download text-primary me-2"></i>
+                                    {% if language == 'uk' %}
+                                        Цифрові продукти будуть доступні для завантаження
+                                    {% elif language == 'ru' %}
+                                        Цифровые продукты будут доступны для скачивания
+                                    {% elif language == 'de' %}
+                                        Digitale Produkte stehen zum Download bereit
+                                    {% else %}
+                                        Digital products will be available for download
+                                    {% endif %}
+                                </li>
+                                
+                                <li class="mb-2">
+                                    <i class="fas fa-headset text-primary me-2"></i>
+                                    {% if language == 'uk' %}
+                                        Наша підтримка готова допомогти з будь-якими питаннями
+                                    {% elif language == 'ru' %}
+                                        Наша поддержка готова помочь с любыми вопросами
+                                    {% elif language == 'de' %}
+                                        Unser Support hilft Ihnen gerne bei Fragen weiter
+                                    {% else %}
+                                        Our support team is ready to help with any questions
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-2">
+                            <a href="{{ url_for('main.shop') }}" class="btn btn-outline-primary btn-lg w-100">
+                                <i class="fas fa-shopping-bag me-2"></i>
+                                {% if language == 'uk' %}
+                                    Продовжити покупки
+                                {% elif language == 'ru' %}
+                                    Продолжить покупки
+                                {% elif language == 'de' %}
+                                    Weiter einkaufen
+                                {% else %}
+                                    Continue Shopping
+                                {% endif %}
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-home me-2"></i>
+                                {% if language == 'uk' %}
+                                    На головну
+                                {% elif language == 'ru' %}
+                                    На главную
+                                {% elif language == 'de' %}
+                                    Zur Startseite
+                                {% else %}
+                                    Go Home
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Support -->
+                    <div class="mt-4 pt-4 border-top">
+                        <p class="text-muted mb-2">
+                            {% if language == 'uk' %}
+                                Маєте питання щодо замовлення?
+                            {% elif language == 'ru' %}
+                                Есть вопросы по заказу?
+                            {% elif language == 'de' %}
+                                Haben Sie Fragen zu Ihrer Bestellung?
+                            {% else %}
+                                Have questions about your order?
+                            {% endif %}
+                        </p>
+                        <a href="{{ url_for('main.contact') }}" class="btn btn-link">
+                            {% if language == 'uk' %}
+                                Зв'язатися з підтримкою
+                            {% elif language == 'ru' %}
+                                Связаться с поддержкой
+                            {% elif language == 'de' %}
+                                Support kontaktieren
+                            {% else %}
+                                Contact Support
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Clear cart after successful purchase
+localStorage.removeItem('cart');
+
+// Update cart counter
+function updateCartCounter() {
+    const cartCounter = document.querySelector('.cart-counter');
+    if (cartCounter) {
+        cartCounter.textContent = '0';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', updateCartCounter);
+</script>
+{% endblock %}

@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.get_name(language) }} - {% if language == 'uk' %}Продукт{% elif language == 'ru' %}Продукт{% elif language == 'de' %}Produkt{% else %}Product{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('main.index') }}">
+                    {% if language == 'uk' %}Головна{% elif language == 'ru' %}Главная{% elif language == 'de' %}Startseite{% else %}Home{% endif %}
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('main.shop') }}">
+                    {% if language == 'uk' %}Магазин{% elif language == 'ru' %}Магазин{% elif language == 'de' %}Shop{% else %}Shop{% endif %}
+                </a>
+            </li>
+            {% if product.category %}
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('main.category_products', category_id=product.category.id) }}">
+                    {{ product.category.get_name(language) }}
+                </a>
+            </li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">{{ product.get_name(language) }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-md-6 mb-4">
+            <div class="product-image-container">
+                {% if product.image %}
+                    <img src="{{ url_for('static', filename='uploads/' + product.image) }}" 
+                         class="img-fluid rounded shadow" 
+                         alt="{{ product.get_name(language) }}"
+                         style="width: 100%; max-height: 500px; object-fit: cover;">
+                {% else %}
+                    <div class="placeholder-image bg-light d-flex align-items-center justify-content-center rounded shadow" 
+                         style="height: 400px;">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="col-md-6">
+            <div class="product-details">
+                <!-- Product Title -->
+                <h1 class="product-title mb-3">{{ product.get_name(language) }}</h1>
+
+                <!-- Product Category -->
+                {% if product.category %}
+                <div class="product-category mb-3">
+                    <span class="badge bg-primary">{{ product.category.get_name(language) }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Product Price -->
+                <div class="product-price mb-4">
+                    <h3 class="text-primary fw-bold">
+                        {{ "%.2f"|format(product.price) }} {{ product.currency }}
+                    </h3>
+                </div>
+
+                <!-- Product Description -->
+                <div class="product-description mb-4">
+                    <h5>
+                        {% if language == 'uk' %}Опис{% elif language == 'ru' %}Описание{% elif language == 'de' %}Beschreibung{% else %}Description{% endif %}:
+                    </h5>
+                    <p class="text-muted">{{ product.get_description(language) }}</p>
+                </div>
+
+                <!-- Add to Cart Button -->
+                <div class="product-actions mb-4">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <div class="input-group">
+                                <button class="btn btn-outline-secondary" type="button" onclick="decreaseQuantity()">-</button>
+                                <input type="number" class="form-control text-center" id="quantity" value="1" min="1" max="99">
+                                <button class="btn btn-outline-secondary" type="button" onclick="increaseQuantity()">+</button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <button class="btn btn-primary btn-lg w-100" onclick="addToCart({{ product.id }})">
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                {% if language == 'uk' %}Додати до кошика{% elif language == 'ru' %}Добавить в корзину{% elif language == 'de' %}In den Warenkorb{% else %}Add to Cart{% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Info -->
+                <div class="product-info">
+                    <div class="row text-muted small">
+                        {% if product.sku %}
+                        <div class="col-6">
+                            <strong>SKU:</strong> {{ product.sku }}
+                        </div>
+                        {% endif %}
+                        <div class="col-6">
+                            <strong>
+                                {% if language == 'uk' %}Наявність{% elif language == 'ru' %}Наличие{% elif language == 'de' %}Verfügbarkeit{% else %}Availability{% endif %}:
+                            </strong>
+                            {% if product.is_active %}
+                                <span class="text-success">
+                                    {% if language == 'uk' %}В наявності{% elif language == 'ru' %}В наличии{% elif language == 'de' %}Verfügbar{% else %}In Stock{% endif %}
+                                </span>
+                            {% else %}
+                                <span class="text-danger">
+                                    {% if language == 'uk' %}Немає в наявності{% elif language == 'ru' %}Нет в наличии{% elif language == 'de' %}Nicht verfügbar{% else %}Out of Stock{% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Tabs -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab">
+                        {% if language == 'uk' %}Детальний опис{% elif language == 'ru' %}Подробное описание{% elif language == 'de' %}Detaillierte Beschreibung{% else %}Detailed Description{% endif %}
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications" type="button" role="tab">
+                        {% if language == 'uk' %}Характеристики{% elif language == 'ru' %}Характеристики{% elif language == 'de' %}Spezifikationen{% else %}Specifications{% endif %}
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content mt-3" id="productTabsContent">
+                <div class="tab-pane fade show active" id="description" role="tabpanel">
+                    <div class="p-3">
+                        <p>{{ product.get_description(language) }}</p>
+                        <p class="text-muted">
+                            {% if language == 'uk' %}
+                                Цей продукт надає високу якість та функціональність для ваших потреб. Ідеально підходить для професійного використання.
+                            {% elif language == 'ru' %}
+                                Этот продукт обеспечивает высокое качество и функциональность для ваших потребностей. Идеально подходит для профессионального использования.
+                            {% elif language == 'de' %}
+                                Dieses Produkt bietet hohe Qualität und Funktionalität für Ihre Bedürfnisse. Ideal für den professionellen Einsatz.
+                            {% else %}
+                                This product provides high quality and functionality for your needs. Perfect for professional use.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="specifications" role="tabpanel">
+                    <div class="p-3">
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+                                    <td><strong>
+                                        {% if language == 'uk' %}Ціна{% elif language == 'ru' %}Цена{% elif language == 'de' %}Preis{% else %}Price{% endif %}:
+                                    </strong></td>
+                                    <td>{{ "%.2f"|format(product.price) }} {{ product.currency }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>
+                                        {% if language == 'uk' %}Категорія{% elif language == 'ru' %}Категория{% elif language == 'de' %}Kategorie{% else %}Category{% endif %}:
+                                    </strong></td>
+                                    <td>{{ product.category.get_name(language) if product.category else 'N/A' }}</td>
+                                </tr>
+                                {% if product.sku %}
+                                <tr>
+                                    <td><strong>SKU:</strong></td>
+                                    <td>{{ product.sku }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <td><strong>
+                                        {% if language == 'uk' %}Статус{% elif language == 'ru' %}Статус{% elif language == 'de' %}Status{% else %}Status{% endif %}:
+                                    </strong></td>
+                                    <td>
+                                        {% if product.is_active %}
+                                            <span class="badge bg-success">
+                                                {% if language == 'uk' %}Активний{% elif language == 'ru' %}Активный{% elif language == 'de' %}Aktiv{% else %}Active{% endif %}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                {% if language == 'uk' %}Неактивний{% elif language == 'ru' %}Неактивный{% elif language == 'de' %}Inaktiv{% else %}Inactive{% endif %}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h4 class="mb-4">
+                {% if language == 'uk' %}Схожі товари{% elif language == 'ru' %}Похожие товары{% elif language == 'de' %}Ähnliche Produkte{% else %}Related Products{% endif %}
+            </h4>
+            <div class="row">
+                {% for related_product in related_products %}
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                    <div class="card h-100">
+                        {% if related_product.image %}
+                            <img src="{{ url_for('static', filename='uploads/' + related_product.image) }}" 
+                                 class="card-img-top" 
+                                 alt="{{ related_product.get_name(language) }}"
+                                 style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <i class="fas fa-image fa-2x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title">{{ related_product.get_name(language) }}</h6>
+                            <p class="card-text text-muted small flex-grow-1">
+                                {{ related_product.get_description(language)[:100] }}...
+                            </p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="text-primary">{{ "%.2f"|format(related_product.price) }} {{ related_product.currency }}</strong>
+                                    <a href="{{ url_for('main.product_detail', product_id=related_product.id) }}" class="btn btn-sm btn-outline-primary">
+                                        {% if language == 'uk' %}Детальніше{% elif language == 'ru' %}Подробнее{% elif language == 'de' %}Details{% else %}Details{% endif %}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function increaseQuantity() {
+    const quantityInput = document.getElementById('quantity');
+    const currentValue = parseInt(quantityInput.value);
+    if (currentValue < 99) {
+        quantityInput.value = currentValue + 1;
+    }
+}
+
+function decreaseQuantity() {
+    const quantityInput = document.getElementById('quantity');
+    const currentValue = parseInt(quantityInput.value);
+    if (currentValue > 1) {
+        quantityInput.value = currentValue - 1;
+    }
+}
+
+function addToCart(productId) {
+    const quantity = parseInt(document.getElementById('quantity').value);
+    
+    // Get existing cart from localStorage
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    
+    // Check if product already exists in cart
+    const existingItemIndex = cart.findIndex(item => item.product_id === productId);
+    
+    if (existingItemIndex > -1) {
+        // Update quantity
+        cart[existingItemIndex].quantity += quantity;
+    } else {
+        // Add new item
+        cart.push({
+            product_id: productId,
+            quantity: quantity
+        });
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('cart', JSON.stringify(cart));
+    
+    // Show success message
+    const language = '{{ language }}';
+    let message;
+    if (language === 'uk') {
+        message = 'Товар додано до кошика!';
+    } else if (language === 'ru') {
+        message = 'Товар добавлен в корзину!';
+    } else if (language === 'de') {
+        message = 'Produkt zum Warenkorb hinzugefügt!';
+    } else {
+        message = 'Product added to cart!';
+    }
+    
+    // Simple alert (you can replace with a better notification)
+    alert(message);
+    
+    // Update cart counter if exists
+    updateCartCounter();
+}
+
+function updateCartCounter() {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
+    const cartCounter = document.querySelector('.cart-counter');
+    if (cartCounter) {
+        cartCounter.textContent = totalItems;
+    }
+}
+
+// Update cart counter on page load
+document.addEventListener('DOMContentLoaded', updateCartCounter);
+</script>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Privacy Policy') }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">{{ _('Privacy Policy') }}</h1>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">{{ _('1. Introduction') }}</h2>
+                    <p>
+                        {{ _('This Privacy Policy explains how SaaS Shop collects, uses, and protects your personal information when you use our website and services. We are committed to ensuring that your privacy is protected. Should we ask you to provide certain information by which you can be identified when using this website, you can be assured that it will only be used in accordance with this privacy policy.') }}
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('2. Information We Collect') }}</h2>
+                    <p>{{ _('We may collect the following information:') }}</p>
+                    <ul>
+                        <li>{{ _('Name and contact information including email address') }}</li>
+                        <li>{{ _('Demographic information such as postcode, preferences, and interests') }}</li>
+                        <li>{{ _('Other information relevant to customer surveys and/or offers') }}</li>
+                        <li>{{ _('Information about your use of our website and services') }}</li>
+                    </ul>
+
+                    <h2 class="h4 mb-3">{{ _('3. How We Use Your Information') }}</h2>
+                    <p>{{ _('We use this information to:') }}</p>
+                    <ul>
+                        <li>{{ _('Process orders and manage your account') }}</li>
+                        <li>{{ _('Improve our products and services') }}</li>
+                        <li>{{ _('Send promotional emails about new products, special offers, or other information which we think you may find interesting') }}</li>
+                        <li>{{ _('Contact you for market research purposes') }}</li>
+                    </ul>
+
+                    <h2 class="h4 mb-3">{{ _('4. Security') }}</h2>
+                    <p>
+                        {{ _('We are committed to ensuring that your information is secure. In order to prevent unauthorized access or disclosure, we have put in place suitable physical, electronic, and managerial procedures to safeguard and secure the information we collect online.') }}
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('5. Cookies') }}</h2>
+                    <p>
+                        {{ _('We use cookies on this website. A cookie is a small file which asks permission to be placed on your computer\'s hard drive. Cookies help us analyze web traffic or let you know when you visit a particular site. You can choose to accept or decline cookies.') }}
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('6. Links to Other Websites') }}</h2>
+                    <p>
+                        {{ _('Our website may contain links to other websites of interest. However, once you have used these links to leave our site, you should note that we do not have any control over that other website. Therefore, we cannot be responsible for the protection and privacy of any information which you provide whilst visiting such sites.') }}
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('7. Your Rights') }}</h2>
+                    <p>
+                        {{ _('You have the right to request a copy of the information that we hold about you. If you would like a copy of your personal information, please contact us. You also have the right to have your information corrected if it is inaccurate.') }}
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('8. Changes to This Policy') }}</h2>
+                    <p>
+                        {{ _('We may update this policy from time to time by updating this page. You should check this page regularly to ensure that you are happy with any changes.') }}
+                    </p>
+
+                    <h2 class="h4 mb-3">{{ _('9. Contact Us') }}</h2>
+                    <p>
+                        {{ _('If you have any questions about this privacy policy, please contact us.') }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary">{{ _('Back to Home') }}</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
