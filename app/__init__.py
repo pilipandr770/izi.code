@@ -164,9 +164,15 @@ def create_app(config_name=None):
     @app.context_processor
     def inject_template_vars():
         from flask import session
+        from app.models import SocialLink
+        
+        # Get social links for all pages
+        social_links = SocialLink.query.filter_by(is_active=True).order_by(SocialLink.sort_order).all()
+        
         return {
             'language': session.get('language', 'uk'),
-            '_': translate  # Custom translation function
+            '_': translate,  # Custom translation function
+            'social_links': social_links  # Social links for footer
         }
     
     # Import models

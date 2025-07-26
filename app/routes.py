@@ -27,14 +27,10 @@ def index():
     # Get featured products
     featured_products = Product.query.filter_by(is_active=True).order_by(Product.sort_order).limit(6).all()
     
-    # Get social links
-    social_links = SocialLink.query.filter_by(is_active=True).order_by(SocialLink.sort_order).all()
-    
     return render_template('index.html',
                          blocks=blocks,
                          latest_posts=latest_posts,
                          featured_products=featured_products,
-                         social_links=social_links,
                          language=language)
 
 @main_bp.route('/set_language/<language>')
@@ -356,21 +352,18 @@ def categories():
 def privacy():
     """Privacy Policy page"""
     language = get_current_language()
-    social_links = SocialLink.query.filter_by(is_active=True).order_by(SocialLink.sort_order).all()
-    return render_template('privacy.html', language=language, social_links=social_links)
+    return render_template('privacy.html', language=language)
 
 
 @main_bp.route('/terms')
 def terms():
     """Terms and Conditions page"""
     language = get_current_language()
-    social_links = SocialLink.query.filter_by(is_active=True).order_by(SocialLink.sort_order).all()
-    return render_template('terms.html', language=language, social_links=social_links)
+    return render_template('terms.html', language=language)
 
 
 @main_bp.route('/impressum')
 def impressum():
     """Impressum page"""
     language = get_current_language()
-    social_links = SocialLink.query.filter_by(is_active=True).order_by(SocialLink.sort_order).all()
-    return render_template('impressum.html', language=language, social_links=social_links)
+    return render_template('impressum.html', language=language)
