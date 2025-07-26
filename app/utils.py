@@ -373,7 +373,13 @@ class ChatbotAssistant:
                 # For OpenAI 0.28, we set the API key globally
                 openai.api_key = api_key
                 self.client = True  # Just a flag to indicate it's configured
-                self.assistant_id = current_app.config.get('OPENAI_ASSISTANT_ID')
+                
+                # Get assistant_id from config or environment
+                self.assistant_id = current_app.config.get('OPENAI_ASSISTANT_ID') or os.environ.get('OPENAI_ASSISTANT_ID')
+                if not self.assistant_id or not isinstance(self.assistant_id, str) or not self.assistant_id.startswith('asst_'):
+                    current_app.logger.warning(f"Invalid or missing Assistant ID: {self.assistant_id}. Check your configuration.")
+                else:
+                    current_app.logger.info(f"Using OpenAI Assistant ID: {self.assistant_id}")
                 
                 # Add API key to env for external script
                 os.environ['OPENAI_API_KEY'] = api_key
@@ -717,7 +723,8 @@ Reply in English, be friendly and helpful. Try to direct the conversation toward
                             content=message
                         )
                         
-                        # Run the assistant
+                        # Run the assistant with properly validated assistant_id
+                        current_app.logger.info(f"Using Assistant ID for direct API call: {self.assistant_id}")
                         run = client.beta.threads.runs.create(
                             thread_id=thread.id,
                             assistant_id=self.assistant_id,
