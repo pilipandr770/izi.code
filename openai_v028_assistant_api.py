@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-OpenAI ChatBot Caller Script for Flask App
-This script handles OpenAI API calls for the chatbot functionality,
-properly utilizing the assistant_id in a prompt for OpenAI SDK v0.28.0
-which doesn't support the Assistants API directly.
-"""in/env python3
-# -*- coding: utf-8 -*-
-"""
-OpenAI Assistant API Caller Script for Flask App
-This script handles OpenAI Assistant API calls for the chatbot functionality
-to avoid encoding issues in Flask context.
-Compatible with OpenAI SDK v0.28.
+OpenAI Assistant API Caller Script for Flask App - v0.28.0 Specific
+This script handles OpenAI Assistant API calls for OpenAI SDK v0.28.0
 """
 
 import sys
@@ -48,9 +39,16 @@ def main():
         # Get assistant_id from environment first, then from request data as fallback
         assistant_id = os.getenv('OPENAI_ASSISTANT_ID') or request_data.get("assistant_id")
         
-        if assistant_id:
-            # Log that we're using assistant_id
-            print(json.dumps({"debug": f"Using Assistant ID: {assistant_id[:8]}... in prompt"}), file=sys.stderr)
+        if not assistant_id:
+            print(json.dumps({
+                "error": "OpenAI Assistant ID not found", 
+                "response": "I'm sorry, I can't connect to my assistant services right now. Please try again later."
+            }))
+            sys.exit(0)
+            
+        # Debug the assistant ID (showing only partial for security)
+        safe_id = assistant_id[:8] + "..." if len(assistant_id) > 8 else "not_available"
+        print(json.dumps({"debug": f"Using Assistant ID: {safe_id} (truncated for security)"}), file=sys.stderr)
             
         # Get user message and other parameters
         context = request_data.get('context', '')
@@ -61,29 +59,45 @@ def main():
         
         # Prepare user message with context
         user_content = user_message
-        if context:
-            user_content = f"{context}\n\nПользователь спрашивает: {user_message}"
-            
+        if product_info or category_info:
+            user_content = f"""
+ИНФОРМАЦИЯ О МАГАЗИНЕ:
+
+КАТЕГОРИИ:
+{category_info}
+
+ПОПУЛЯРНЫЕ ТОВАРЫ:
+{product_info}
+
+Используй эту информацию при ответах пользователю.
+
+Пользователь спрашивает: {user_message}
+"""
+        
         try:
-            # For OpenAI SDK 0.28.0, the Assistant API is accessed differently
-            # Create a thread
-            thread = openai.Thread.create()
+            print(json.dumps({"debug": "Starting OpenAI Assistant API call with v0.28.0 syntax"}), file=sys.stderr)
             
-            # Add user message to the thread
+            # Create a thread with the correct v0.28.0 syntax
+            thread = openai.Thread.create()
+            print(json.dumps({"debug": f"Thread created with ID: {thread.id}"}), file=sys.stderr)
+            
+            # Add user message to thread
             openai.Message.create(
                 thread_id=thread.id,
                 role="user",
                 content=user_content
             )
+            print(json.dumps({"debug": "User message added to thread"}), file=sys.stderr)
             
-            # Run the Assistant on the thread
+            # Run the assistant on the thread
             run = openai.Run.create(
                 thread_id=thread.id,
                 assistant_id=assistant_id,
                 instructions=f"Пользователь общается на языке: {language}. Отвечай на том же языке."
             )
+            print(json.dumps({"debug": f"Assistant run created with ID: {run.id}, initial status: {run.status}"}), file=sys.stderr)
             
-            # Wait for the Assistant to complete processing
+            # Wait for the run to complete
             max_attempts = 30
             attempts = 0
             
@@ -95,49 +109,62 @@ def main():
                 )
                 attempts += 1
                 
+            print(json.dumps({"debug": f"Run completed with status: {run.status} after {attempts} attempts"}), file=sys.stderr)
+            
             # Get the assistant's response
             if run.status == "completed":
-                # Retrieve messages from the thread
+                # Retrieve messages from thread
                 messages = openai.Message.list(thread_id=thread.id)
+                print(json.dumps({"debug": f"Retrieved {len(messages.data)} messages from thread"}), file=sys.stderr)
                 
-                # Get the last assistant message
+                # Find the assistant's message
                 for message in messages.data:
                     if message.role == "assistant":
-                        # In SDK 0.28.0, content structure is different
-                        if hasattr(message.content[0], 'text'):
-                            ai_response = message.content[0].text.value
-                        else:
-                            ai_response = message.content[0].value
-                        result = {
-                            "response": ai_response,
-                            "status": "success"
-                        }
-                        print(json.dumps(result, ensure_ascii=False))
-                        break
+                        # In v0.28.0, content structure might be different from v1.x
+                        try:
+                            # Try the v0.28.0 structure
+                            if hasattr(message.content[0], 'text'):
+                                ai_response = message.content[0].text.value
+                            else:
+                                ai_response = message.content[0].value
+                                
+                            print(json.dumps({"debug": "Successfully extracted assistant response"}), file=sys.stderr)
+                            print(json.dumps({
+                                "response": ai_response,
+                                "status": "success"
+                            }, ensure_ascii=False))
+                            break
+                        except (AttributeError, IndexError) as e:
+                            print(json.dumps({"debug": f"Error extracting message content: {str(e)}"}), file=sys.stderr)
+                            raise e
                 else:
                     # No assistant message found
-                    result = {
+                    print(json.dumps({"debug": "No assistant messages found in thread"}), file=sys.stderr)
+                    print(json.dumps({
                         "error": "No assistant response received",
                         "response": "I'm sorry, I couldn't process your request right now."
-                    }
-                    print(json.dumps(result, ensure_ascii=False))
+                    }))
             else:
-                # Run didn't complete successfully
-                result = {
+                # Run failed or timed out
+                print(json.dumps({"debug": f"Run failed with status: {run.status}"}), file=sys.stderr)
+                print(json.dumps({
                     "error": f"Assistant run failed with status: {run.status}",
                     "response": "I'm sorry, I couldn't process your request right now."
-                }
-                print(json.dumps(result, ensure_ascii=False))
+                }))
                 
-        except (AttributeError, Exception) as e:
-            # Log the specific error
-            error_msg = f"Assistant API error: {str(e)}"
-            print(json.dumps({"debug": error_msg}), file=sys.stderr)
+        except Exception as e:
+            # Log the error and fall back to ChatCompletion
+            print(json.dumps({"debug": f"Error using Assistant API: {str(e)}"}), file=sys.stderr)
+            print(json.dumps({"debug": "Falling back to ChatCompletion"}), file=sys.stderr)
             
-            # Fallback to ChatCompletion API if Assistant API is not available in this version
-            system_prompt = f"""Ты - AI-консультант интернет-магазина (Assistant ID: {assistant_id}). 
+            # Build system prompt based on assistant configuration
+            system_prompt = f"""Ты - AI-консультант интернет-магазина (Assistant ID: {assistant_id}).
 
-{context}
+КАТЕГОРИИ:
+{category_info}
+
+ПОПУЛЯРНЫЕ ТОВАРЫ:
+{product_info}
 
 Дополнительные инструкции:
 - Отвечай на языке пользователя ({language})
@@ -165,13 +192,11 @@ def main():
             # Extract and return response
             ai_response = response.choices[0].message.content.strip()
             
-            result = {
+            print(json.dumps({
                 "response": ai_response,
                 "status": "success"
-            }
+            }, ensure_ascii=False))
             
-            print(json.dumps(result, ensure_ascii=False))
-        
     except FileNotFoundError:
         print(json.dumps({
             "error": f"Request file not found: {json_file}",
