@@ -266,15 +266,38 @@ document.addEventListener('DOMContentLoaded', function() {
         if (i < originalText.length) {
             typedElement.textContent += originalText.charAt(i);
             i++;
-            setTimeout(typeWriter, 100); // Adjust speed here
+            setTimeout(typeWriter, 100);
         } else {
-            // Remove the cursor effect after typing is complete
             typedElement.classList.remove('typed-text');
         }
     }
     
-    // Start typing after a short delay
     setTimeout(typeWriter, 500);
+});
+
+// Initialize Matrix Rain animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize main hero matrix rain
+    if (document.getElementById('matrix-bg')) {
+        const heroMatrixRain = new MatrixRain('matrix-bg', {
+            fontSize: 14,
+            color: 'rgba(0, 123, 255, 0.7)',
+            backgroundColor: 'rgba(0, 0, 0, 0.03)',
+            speed: 1,
+            density: 0.98
+        });
+    }
+    
+    // Initialize features section matrix rain
+    if (document.getElementById('features-matrix-bg')) {
+        const featuresMatrixRain = new MatrixRain('features-matrix-bg', {
+            fontSize: 12,
+            color: 'rgba(0, 225, 255, 0.5)',
+            backgroundColor: 'rgba(0, 0, 0, 0.05)',
+            speed: 0.8,
+            density: 0.95
+        });
+    }
 });
 
 // Simple chat functionality
@@ -284,15 +307,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chat-messages');
     
     if (!chatInput || !sendButton || !chatMessages) return;
-    
-    // Sample AI responses
-    const aiResponses = [
-        "{{ _('I can help you find the perfect digital product for your needs!') }}",
-        "{{ _('Our AI-powered tools can significantly improve your workflow.') }}",
-        "{{ _('Would you like me to recommend some popular products in our shop?') }}",
-        "{{ _('We offer excellent customer support for all our products.') }}",
-        "{{ _('Our products are competitively priced and offer great value.') }}"
-    ];
     
     function addMessage(text, isUser = false) {
         const messageDiv = document.createElement('div');
@@ -319,10 +333,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function getAIResponse(message) {
         try {
-            // Get the current language from HTML lang attribute
             const currentLanguage = document.documentElement.lang || 'uk';
             
-            // Call the backend API
             const response = await fetch('/api/chatbot', {
                 method: 'POST',
                 headers: {
@@ -351,11 +363,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const message = chatInput.value.trim();
         if (!message) return;
         
-        // Add user message
         addMessage(message, true);
         chatInput.value = '';
         
-        // Show "typing" indicator
         const typingDiv = document.createElement('div');
         typingDiv.className = 'd-flex mb-3';
         typingDiv.id = 'typing-indicator';
@@ -372,16 +382,13 @@ document.addEventListener('DOMContentLoaded', function() {
         chatMessages.appendChild(typingDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
         
-        // Get response from backend
         const aiResponse = await getAIResponse(message);
         
-        // Remove typing indicator
         const typingIndicator = document.getElementById('typing-indicator');
         if (typingIndicator) {
             typingIndicator.remove();
         }
         
-        // Add AI response
         addMessage(aiResponse, false);
     }
     

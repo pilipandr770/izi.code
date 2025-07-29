@@ -3,26 +3,12 @@ import os
 import uuid
 import stripe
 import sys
-import locale
-import importlib
-import openai
-import re
-import requests
-import random
-import time
-import json
-import tempfile
-import subprocess
-import traceback
-from typing import Optional, Dict, Any, List
-from datetime import datetime
-from werkzeug.utils import secure_filename
-from flask import current_app, session
 
 # Add project root to Python path to ensure modules can be found
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Set default encoding to UTF-8 for the entire application
+import locale
 if sys.platform.startswith('win'):
     try:
         locale.setlocale(locale.LC_ALL, 'C.UTF-8')
@@ -33,8 +19,11 @@ if sys.platform.startswith('win'):
             pass
 
 # Force reload openai module to ensure we get the correct version
+import importlib
 if 'openai' in sys.modules:
     del sys.modules['openai']
+
+import openai
 
 # Double check that we have the right version
 if hasattr(openai, '__version__'):
@@ -42,10 +31,17 @@ if hasattr(openai, '__version__'):
 else:
     print("DEBUG: OpenAI version attribute not found")
 
+from typing import Optional, Dict, Any, List
+from datetime import datetime
+from werkzeug.utils import secure_filename
+from flask import current_app, session
 from app.extensions import db
 from app.models import Product, Category, BlogPost, User
+import re
+import requests
 
 # Ensure proper Unicode handling
+import sys
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 if hasattr(sys.stderr, 'reconfigure'):
@@ -184,10 +180,12 @@ class AIContentGenerator:
                 current_app.logger.info(f"OpenAI version: {openai.__version__}")
                 
                 # Ensure proper environment setup for Unicode handling
+                import os
                 if 'PYTHONIOENCODING' not in os.environ:
                     os.environ['PYTHONIOENCODING'] = 'utf-8'
                 
                 # Set locale for proper encoding
+                import locale
                 try:
                     locale.setlocale(locale.LC_ALL, 'C.UTF-8')
                 except:
@@ -217,7 +215,12 @@ class AIContentGenerator:
         
         try:
             # Use temporary file approach to avoid encoding issues in subprocess
-                        
+            import subprocess
+            import json
+            import sys
+            import os
+            import tempfile
+            
             current_app.logger.info("Calling OpenAI via temporary file...")
             
             # Create temporary file with arguments in system temp directory to avoid path issues
@@ -226,6 +229,7 @@ class AIContentGenerator:
             current_app.logger.info(f"Using temp directory: {temp_dir}")
             
             # Create temp file manually with unique name
+            import uuid
             temp_filename = f"openai_args_{uuid.uuid4().hex}.json"
             temp_file = os.path.join(temp_dir, temp_filename)
             
@@ -286,6 +290,7 @@ class AIContentGenerator:
                             }
                         else:
                             current_app.logger.error(f"File-based OpenAI failed: {data.get('error', 'Unknown error')}")
+                            current_app.logger.error(f"Full response: {data}")
                     except json.JSONDecodeError as e:
                         current_app.logger.error(f"Failed to parse JSON response: {e}")
                         current_app.logger.error(f"Raw output: {result.stdout[:500]}")
@@ -295,6 +300,7 @@ class AIContentGenerator:
                 else:
                     current_app.logger.error(f"File-based script failed with code {result.returncode}")
                     current_app.logger.error(f"Error output: {result.stderr}")
+                    current_app.logger.error(f"Standard output: {result.stdout}")
                     
             finally:
                 # Clean up temp file
@@ -307,30 +313,119 @@ class AIContentGenerator:
                 
         except Exception as e:
             current_app.logger.error(f"Error calling file-based OpenAI script: {str(e)}")
+            import traceback
             current_app.logger.error(f"Traceback: {traceback.format_exc()}")
         
         # Fallback if everything fails
-        current_app.logger.info("Using fallback template")
+        current_app.logger.info("Using fallback template due to OpenAI failure")
         return self._get_fallback_template(topic, language, keywords)
     
     def _get_fallback_template(self, topic: str, language: str, keywords: str) -> Dict[str, str]:
         """Get fallback template for when OpenAI fails"""
         language_templates = {
             'uk': {
-                'title': f"Все про {topic}: повний гід",
-                'excerpt': f"Детальний огляд теми '{topic}' з практичними рекомендаціями."
+                'title': f"Все про {topic}: повний гід для бізнесу",
+                'excerpt': f"Детальний огляд теми '{topic}' з практичними рекомендаціями та розрахунками ефективності для вашого бізнесу.",
+                'content': f"""<h1>Все про {topic}: повний гід для бізнесу</h1>
+
+<h2>Вступ</h2>
+<p>У сучасному світі технології {topic} стають все більш важливими для успішного ведення бізнесу. Наші рішення допомагають компаніям підвищити ефективність та збільшити прибутки.</p>
+
+<h2>Основні переваги</h2>
+<p>Впровадження {topic} може принести наступні переваги:</p>
+<ul>
+<li>Підвищення продуктивності на 25-40%</li>
+<li>Скорочення операційних витрат на 15-30%</li>
+<li>Покращення якості обслуговування клієнтів</li>
+<li>Автоматизація рутинних завдань</li>
+</ul>
+
+<h2>Практичні кейси</h2>
+<p>Наші клієнти досягли значних результатів: компанія "Приклад А" збільшила оборот на 45% після впровадження наших рішень з {topic}.</p>
+
+<h2>Розрахунок окупності</h2>
+<p>При інвестиції в {keywords} рішення вартістю від 5000 грн, типова окупність складає 3-6 місяців завдяки економії ресурсів та підвищенню ефективності.</p>
+
+<h2>Висновок</h2>
+<p>Інвестиції в {topic} - це інвестиції у майбутнє вашого бізнесу. Зв'яжіться з нами для отримання персональної консультації.</p>"""
             },
             'ru': {
-                'title': f"Все о {topic}: полное руководство", 
-                'excerpt': f"Подробный обзор темы '{topic}' с практическими рекомендациями."
+                'title': f"Все о {topic}: полное руководство для бизнеса", 
+                'excerpt': f"Подробный обзор темы '{topic}' с практическими рекомендациями и расчетами эффективности для вашего бизнеса.",
+                'content': f"""<h1>Все о {topic}: полное руководство для бизнеса</h1>
+
+<h2>Введение</h2>
+<p>В современном мире технологии {topic} становятся все более важными для успешного ведения бизнеса. Наши решения помогают компаниям повысить эффективность и увеличить прибыль.</p>
+
+<h2>Основные преимущества</h2>
+<p>Внедрение {topic} может принести следующие преимущества:</p>
+<ul>
+<li>Повышение производительности на 25-40%</li>
+<li>Сокращение операционных расходов на 15-30%</li>
+<li>Улучшение качества обслуживания клиентов</li>
+<li>Автоматизация рутинных задач</li>
+</ul>
+
+<h2>Практические кейсы</h2>
+<p>Наши клиенты достигли значительных результатов: компания "Пример А" увеличила оборот на 45% после внедрения наших решений по {topic}.</p>
+
+<h2>Расчет окупаемости</h2>
+<p>При инвестиции в {keywords} решения стоимостью от 5000 грн, типичная окупаемость составляет 3-6 месяцев благодаря экономии ресурсов и повышению эффективности.</p>
+
+<h2>Заключение</h2>
+<p>Инвестиции в {topic} - это инвестиции в будущее вашего бизнеса. Свяжитесь с нами для получения персональной консультации.</p>"""
             },
             'de': {
-                'title': f"Alles über {topic}: Vollständige Anleitung",
-                'excerpt': f"Umfassender Überblick über '{topic}' mit praktischen Empfehlungen."
+                'title': f"Alles über {topic}: Vollständige Anleitung für Unternehmen",
+                'excerpt': f"Umfassender Überblick über '{topic}' mit praktischen Empfehlungen und Effizienzberechnungen für Ihr Unternehmen.",
+                'content': f"""<h1>Alles über {topic}: Vollständige Anleitung für Unternehmen</h1>
+
+<h2>Einführung</h2>
+<p>In der modernen Welt werden {topic}-Technologien immer wichtiger für erfolgreiches Geschäft. Unsere Lösungen helfen Unternehmen, Effizienz zu steigern und Gewinne zu erhöhen.</p>
+
+<h2>Hauptvorteile</h2>
+<p>Die Implementierung von {topic} kann folgende Vorteile bringen:</p>
+<ul>
+<li>Produktivitätssteigerung um 25-40%</li>
+<li>Reduzierung der Betriebskosten um 15-30%</li>
+<li>Verbesserung der Kundenbetreuung</li>
+<li>Automatisierung von Routineaufgaben</li>
+</ul>
+
+<h2>Praktische Fallstudien</h2>
+<p>Unsere Kunden haben bedeutende Ergebnisse erzielt: Unternehmen "Beispiel A" steigerte den Umsatz um 45% nach der Implementierung unserer {topic}-Lösungen.</p>
+
+<h2>ROI-Berechnung</h2>
+<p>Bei einer Investition in {keywords}-Lösungen ab 200 EUR beträgt die typische Amortisationszeit 3-6 Monate dank Ressourceneinsparungen und Effizienzsteigerung.</p>
+
+<h2>Fazit</h2>
+<p>Investitionen in {topic} sind Investitionen in die Zukunft Ihres Unternehmens. Kontaktieren Sie uns für eine persönliche Beratung.</p>"""
             },
             'en': {
-                'title': f"Everything about {topic}: Complete Guide",
-                'excerpt': f"Comprehensive overview of '{topic}' with practical recommendations."
+                'title': f"Everything about {topic}: Complete Business Guide",
+                'excerpt': f"Comprehensive overview of '{topic}' with practical recommendations and efficiency calculations for your business.",
+                'content': f"""<h1>Everything about {topic}: Complete Business Guide</h1>
+
+<h2>Introduction</h2>
+<p>In today's world, {topic} technologies are becoming increasingly important for successful business operations. Our solutions help companies increase efficiency and boost profits.</p>
+
+<h2>Key Benefits</h2>
+<p>Implementing {topic} can provide the following benefits:</p>
+<ul>
+<li>Productivity increase by 25-40%</li>
+<li>Operational cost reduction by 15-30%</li>
+<li>Improved customer service quality</li>
+<li>Automation of routine tasks</li>
+</ul>
+
+<h2>Practical Case Studies</h2>
+<p>Our clients achieved significant results: Company "Example A" increased revenue by 45% after implementing our {topic} solutions.</p>
+
+<h2>ROI Calculation</h2>
+<p>With an investment in {keywords} solutions starting from $200, typical payback period is 3-6 months due to resource savings and efficiency improvements.</p>
+
+<h2>Conclusion</h2>
+<p>Investments in {topic} are investments in your business future. Contact us for a personalized consultation.</p>"""
             }
         }
         
@@ -338,7 +433,7 @@ class AIContentGenerator:
         return {
             'title': template['title'],
             'excerpt': template['excerpt'],
-            'content': f'<h2>About {topic}</h2><p>Detailed content about {topic} with keywords: {keywords}. This article includes practical recommendations and expert advice.</p>'
+            'content': template['content']
         }
     
     def generate_multilingual_post(self, topics: Dict[str, str], keywords: str = '') -> Dict[str, Dict[str, str]]:
@@ -373,13 +468,7 @@ class ChatbotAssistant:
                 # For OpenAI 0.28, we set the API key globally
                 openai.api_key = api_key
                 self.client = True  # Just a flag to indicate it's configured
-                
-                # Get assistant_id from config or environment
-                self.assistant_id = current_app.config.get('OPENAI_ASSISTANT_ID') or os.environ.get('OPENAI_ASSISTANT_ID')
-                if not self.assistant_id or not isinstance(self.assistant_id, str) or not self.assistant_id.startswith('asst_'):
-                    current_app.logger.warning(f"Invalid or missing Assistant ID: {self.assistant_id}. Check your configuration.")
-                else:
-                    current_app.logger.info(f"Using OpenAI Assistant ID: {self.assistant_id}")
+                self.assistant_id = current_app.config.get('OPENAI_ASSISTANT_ID')
                 
                 # Add API key to env for external script
                 os.environ['OPENAI_API_KEY'] = api_key
@@ -428,6 +517,9 @@ class ChatbotAssistant:
             current_app.logger.info(f"Using OpenAI Assistant ID: {self.assistant_id}")
             
             # Save request to temp file
+            import json
+            import tempfile
+            import subprocess
             
             with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as f:
                 json.dump(assistant_request, f, ensure_ascii=False, indent=2)
@@ -606,6 +698,7 @@ class ChatbotAssistant:
         lang_responses = responses.get(language, responses['uk'])
         
         # Determine response type based on message content
+        import random
         
         if any(word in message_lower for word in ['привет', 'привіт', 'hello', 'hallo', 'hi', 'добро', 'доброго']):
             return random.choice(lang_responses['greeting'])
@@ -723,8 +816,7 @@ Reply in English, be friendly and helpful. Try to direct the conversation toward
                             content=message
                         )
                         
-                        # Run the assistant with properly validated assistant_id
-                        current_app.logger.info(f"Using Assistant ID for direct API call: {self.assistant_id}")
+                        # Run the assistant
                         run = client.beta.threads.runs.create(
                             thread_id=thread.id,
                             assistant_id=self.assistant_id,
@@ -747,29 +839,43 @@ Reply in English, be friendly and helpful. Try to direct the conversation toward
                                 return message.content[0].text.value
                     else:
                         # For v0.x API - special handling for 0.28.0
-                        # Build enhanced system prompt with assistant_id
-                        system_prompt = f"""Ты - AI-консультант интернет-магазина (Assistant ID: {self.assistant_id}).
+                        import time
                         
-Отвечай на языке пользователя ({language}).
-Будь дружелюбным и полезным.
-Помогай с выбором товаров и услуг.
-"""
-                        
-                        # Make direct OpenAI call with ChatCompletion API
-                        response = openai.ChatCompletion.create(
-                            model="gpt-3.5-turbo",
-                            messages=[
-                                {"role": "system", "content": system_prompt},
-                                {"role": "user", "content": message}
-                            ],
-                            max_tokens=800,
-                            temperature=0.7
+                        # Create thread and message
+                        thread = openai.Thread.create()
+                        openai.ThreadMessage.create(
+                            thread_id=thread.id,
+                            role="user",
+                            content=message
                         )
                         
-                        return response.choices[0].message.content.strip()
+                        # Run the assistant
+                        run = openai.ThreadRun.create(
+                            thread_id=thread.id,
+                            assistant_id=self.assistant_id,
+                            instructions=f"Пользователь общается на языке: {language}. Отвечай на том же языке."
+                        )
+                        
+                        # Wait for completion
+                        while run.status in ["queued", "in_progress"]:
+                            time.sleep(0.5)
+                            run = openai.ThreadRun.retrieve(
+                                thread_id=thread.id,
+                                run_id=run.id
+                            )
+                        
+                        # Get messages
+                        messages = openai.ThreadMessage.list(thread_id=thread.id)
+                        for message in messages.data:
+                            if message.role == "assistant":
+                                # Handle different message content structures
+                                if hasattr(message.content[0], 'text'):
+                                    return message.content[0].text.value
+                                else:
+                                    return message.content[0].value
                 
-                except Exception as assistant_error:
-                    current_app.logger.error(f"Assistant API call failed, falling back to ChatCompletion: {str(assistant_error)}")
+                except Exception as e:
+                    current_app.logger.error(f"Assistant API call failed, falling back to ChatCompletion: {str(e)}")
                     # Fall through to ChatCompletion if Assistant API fails
             
             # Fallback to ChatCompletion API
@@ -787,6 +893,7 @@ Reply in English, be friendly and helpful. Try to direct the conversation toward
             )
             
             return response.choices[0].message.content.strip()
+            
         except Exception as e:
             current_app.logger.error(f"Direct OpenAI API call failed: {str(e)}")
             return self._get_static_fallback(language)
@@ -860,45 +967,42 @@ def init_default_data():
             ]
             
             for cat_data in default_categories:
-                category = Category()
-                category.name_uk = cat_data['name_uk']
-                category.name_ru = cat_data['name_ru']
-                category.name_de = cat_data['name_de'] 
-                category.name_en = cat_data['name_en']
-                category.description_uk = cat_data['description_uk']
-                category.description_ru = cat_data['description_ru']
-                category.description_de = cat_data['description_de']
-                category.description_en = cat_data['description_en']
-                category.slug = generate_slug(cat_data['name_en'])
-                category.is_active = True
+                cat_data['slug'] = generate_slug(cat_data['name_uk'])
+                category = Category(**cat_data)
                 db.session.add(category)
-        
+                
         # Create default social links if not exist
         if SocialLink.query.count() == 0:
             default_social_links = [
                 {
-                    'name': 'Facebook', 
-                    'url': 'https://facebook.com', 
-                    'icon': 'fab fa-facebook'
+                    'name': 'Facebook',
+                    'platform': 'facebook',
+                    'url': 'https://facebook.com/',
+                    'icon_class': 'fab fa-facebook',
+                    'is_active': True,
+                    'sort_order': 1
                 },
                 {
-                    'name': 'Twitter', 
-                    'url': 'https://twitter.com', 
-                    'icon': 'fab fa-twitter'
+                    'name': 'Instagram',
+                    'platform': 'instagram',
+                    'url': 'https://instagram.com/',
+                    'icon_class': 'fab fa-instagram',
+                    'is_active': True,
+                    'sort_order': 2
                 },
                 {
-                    'name': 'Instagram', 
-                    'url': 'https://instagram.com', 
-                    'icon': 'fab fa-instagram'
+                    'name': 'Telegram',
+                    'platform': 'telegram',
+                    'url': 'https://t.me/',
+                    'icon_class': 'fab fa-telegram',
+                    'is_active': True,
+                    'sort_order': 3
                 }
             ]
             
             for link_data in default_social_links:
-                link = SocialLink()
-                link.name = link_data['name']
-                link.url = link_data['url']
-                link.icon = link_data['icon']
-                db.session.add(link)
+                social_link = SocialLink(**link_data)
+                db.session.add(social_link)
         
         db.session.commit()
         
@@ -912,16 +1016,27 @@ def cleanup_old_chat_threads(days_old: int = 7):
     try:
         from app.models import ChatThread
         from app.extensions import db
-        from datetime import datetime, timedelta
-
-        cutoff_date = datetime.now() - timedelta(days=days_old)
-        old_threads = ChatThread.query.filter(ChatThread.updated_at < cutoff_date).all()
+        from datetime import datetime, timezone, timedelta
+        
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_old)
+        
+        old_threads = ChatThread.query.filter(ChatThread.created_at < cutoff_date).all()
         
         for thread in old_threads:
+            try:
+                # Try to delete the thread from OpenAI (optional)
+                # client = openai.OpenAI(api_key=current_app.config['OPENAI_API_KEY'])
+                # client.beta.threads.delete(thread.thread_id)
+                pass
+            except Exception as e:
+                current_app.logger.warning(f"Could not delete OpenAI thread {thread.thread_id}: {str(e)}")
+            
+            # Delete from local database
             db.session.delete(thread)
         
         db.session.commit()
-        return len(old_threads)
+        current_app.logger.info(f"Cleaned up {len(old_threads)} old chat threads")
+        
     except Exception as e:
-        current_app.logger.error(f"Error cleaning up old chat threads: {str(e)}")
-        return 0
+        current_app.logger.error(f"Error cleaning up chat threads: {str(e)}")
+        db.session.rollback()

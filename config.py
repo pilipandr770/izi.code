@@ -60,7 +60,7 @@ class Config:
     BABEL_DEFAULT_TIMEZONE = 'UTC'
     
     # Upload configuration
-    UPLOAD_FOLDER = 'app/static/uploads'
+    UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static', 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
     
     # Admin configuration
